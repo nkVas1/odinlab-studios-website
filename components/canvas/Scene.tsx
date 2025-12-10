@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Preload, Environment } from "@react-three/drei";
-import { Suspense } from "react";
+import { Suspense, createElement } from "react";
 
 interface SceneProps {
   children: React.ReactNode;
@@ -23,13 +23,17 @@ export default function Scene({ children, className }: SceneProps) {
       >
         <Suspense fallback={null}>
           <Environment preset="city" />
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} color="#FBBF24" />
-          <pointLight
-            position={[-10, -10, -10]}
-            intensity={2}
-            color="#1E3A8A"
-          />
+          {createElement("ambientLight" as any, { intensity: 0.5 })}
+          {createElement("pointLight" as any, {
+            position: [10, 10, 10],
+            intensity: 1,
+            color: "#FBBF24",
+          })}
+          {createElement("pointLight" as any, {
+            position: [-10, -10, -10],
+            intensity: 2,
+            color: "#1E3A8A",
+          })}
 
           {children}
 

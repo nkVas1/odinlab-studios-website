@@ -1,11 +1,21 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import Scene from "@/components/canvas/Scene";
-import FloatingShape from "@/components/canvas/FloatingShape";
 import ServicesScroll from "@/components/sections/ServicesScroll";
 import ContactSection from "@/components/sections/ContactSection";
+
+// Динамический импорт Scene компонента без SSR
+const Scene = dynamic(() => import("@/components/canvas/Scene"), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-odin-dark" />,
+});
+
+const FloatingShape = dynamic(
+  () => import("@/components/canvas/FloatingShape"),
+  { ssr: false }
+);
 
 export default function Home() {
   const heroTextRef = useRef<HTMLDivElement>(null);
