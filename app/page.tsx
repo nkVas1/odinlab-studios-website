@@ -5,8 +5,8 @@ import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 
 const Scene = dynamic(() => import("@/components/canvas/Scene"), { ssr: false });
-const FloatingShape = dynamic(
-  () => import("@/components/canvas/FloatingShape"),
+const FloatingFluid = dynamic(
+  () => import("@/components/canvas/FloatingFluid"),
   { ssr: false }
 );
 const ServicesScroll = dynamic(
@@ -49,11 +49,11 @@ export default function Home() {
     <>
       <Suspense fallback={<div className="fixed inset-0 bg-odin-dark" />}>
         <Scene>
-          <FloatingShape />
+          <FloatingFluid />
         </Scene>
       </Suspense>
 
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20">
+      <section id="hero-section" className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20">
         <div className="z-10 flex flex-col items-center text-center mix-blend-difference">
           <h1
             ref={heroTextRef}
@@ -79,7 +79,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative z-10 min-h-screen bg-odin-dark/90 px-4 py-20 backdrop-blur-sm">
+      <section id="services-section" className="relative z-10 min-h-screen bg-odin-dark/90 px-4 py-20 backdrop-blur-sm">
         <div className="container mx-auto">
           <h2 className="font-display text-4xl font-bold text-white md:text-6xl">
             Мы создаем <span className="text-odin-accent">цифровые миры</span>
@@ -95,9 +95,11 @@ export default function Home() {
         <ServicesScroll />
       </Suspense>
 
-      <Suspense fallback={<div className="min-h-screen bg-odin-dark" />}>
-        <ContactSection />
-      </Suspense>
+      <section id="contact-section">
+        <Suspense fallback={<div className="min-h-screen bg-odin-dark" />}>
+          <ContactSection />
+        </Suspense>
+      </section>
     </>
   );
 }
