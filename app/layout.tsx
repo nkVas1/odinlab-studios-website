@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import ErrorBoundary from "@/components/providers/ErrorBoundary";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
@@ -99,14 +100,16 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className="bg-odin-dark text-odin-text antialiased selection:bg-odin-gold selection:text-odin-dark">
-        <SmoothScroll>
-          <Cursor />
-          <Header />
-          <main className="relative z-10 flex min-h-screen flex-col">
-            {children}
-          </main>
-          <Footer />
-        </SmoothScroll>
+        <ErrorBoundary>
+          <SmoothScroll>
+            <Cursor />
+            <Header />
+            <main className="relative z-10 flex min-h-screen flex-col">
+              {children}
+            </main>
+            <Footer />
+          </SmoothScroll>
+        </ErrorBoundary>
       </body>
     </html>
   );
