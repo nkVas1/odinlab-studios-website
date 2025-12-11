@@ -32,9 +32,7 @@ export default function FloatingShape() {
 
   return (
     <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-      {/* @ts-expect-error */}
       <mesh ref={meshRef} scale={1.8}>
-        {/* @ts-expect-error */}
         <icosahedronGeometry args={[1, 1]} />
         <MeshDistortMaterial
           color="#0A1628"
@@ -45,21 +43,16 @@ export default function FloatingShape() {
           speed={2}
           wireframe={false}
         />
-      {/* @ts-expect-error */}
       </mesh>
 
-      {/* @ts-expect-error */}
       <mesh scale={2.2} rotation={[0.5, 0.5, 0]}>
-        {/* @ts-expect-error */}
         <torusGeometry args={[1, 0.02, 16, 100]} />
-        {/* @ts-expect-error */}
         <meshStandardMaterial
           color="#FBBF24"
           emissive="#FBBF24"
           emissiveIntensity={2}
           toneMapped={false}
         />
-      {/* @ts-expect-error */}
       </mesh>
     </Float>
   );

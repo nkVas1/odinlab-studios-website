@@ -44,11 +44,8 @@ export default function Scene({ children, className }: SceneProps) {
       >
         <Suspense fallback={null}>
           <Environment preset="city" />
-          {/* @ts-expect-error */}
           <ambientLight intensity={0.5} />
-          {/* @ts-expect-error */}
           <pointLight position={[10, 10, 10]} intensity={1} color="#FBBF24" />
-          {/* @ts-expect-error */}
           <pointLight
             position={[-10, -10, -10]}
             intensity={2}
