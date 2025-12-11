@@ -146,20 +146,31 @@ const STYLES = {
     id: "luxury", 
     label: "Old Money", 
     icon: <Feather size={20} />,
-    desc: "Тихая роскошь, антиква, сдержанность.",
+    desc: "Тихая роскошь. Текстура бумаги, золото, антиква.",
     vars: { 
-      "--bg-page": "#F5F5F4", 
-      "--bg-card": "transparent", 
-      "--text-main": "#292524", 
-      "--text-sec": "#78716C", 
-      "--accent": "#292524", 
-      "--radius": "0px", 
-      "--border": "1px solid #D6D3D1", 
-      "--font-h": '"Times New Roman", serif', 
+      // Теплый, "кремовый" фон
+      "--bg-page": "#F5F5F0", 
+      "--bg-card": "transparent",
+      
+      // Темно-зеленый (Racing Green) или глубокий коричневый вместо черного
+      "--text-main": "#2C3E30", 
+      "--text-sec": "#5F6F60",
+      
+      // Приглушенное золото
+      "--accent": "#BFA15F", 
+      
+      "--radius": "2px", 
+      
+      // Двойная рамка для эффекта "открытки"
+      "--border": "1px solid #D8D4C9", 
+      
+      "--font-h": '"Playfair Display", "Times New Roman", serif', 
       "--shadow": "none", 
       "--btn-shape": "0px", 
       "--layout-gap": "40px", 
-      "--texture": "none" 
+      
+      // Тонкий шум бумаги
+      "--texture": "url('https://www.transparenttextures.com/patterns/cream-paper.png')" 
     }
   },
   paper: {

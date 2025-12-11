@@ -13,6 +13,10 @@ const ServicesScroll = dynamic(
   () => import("@/components/sections/ServicesScroll"),
   { ssr: false }
 );
+const ProcessMap = dynamic(
+  () => import("@/components/features/ProcessMap"),
+  { ssr: false }
+);
 const ContactSection = dynamic(
   () => import("@/components/sections/ContactSection"),
   { ssr: false }
@@ -93,6 +97,10 @@ export default function Home() {
 
       <Suspense fallback={<div className="min-h-screen bg-odin-dark" />}>
         <ServicesScroll />
+      </Suspense>
+
+      <Suspense fallback={<div className="min-h-screen bg-odin-dark" />}>
+        <ProcessMap />
       </Suspense>
 
       <section id="contact-section">

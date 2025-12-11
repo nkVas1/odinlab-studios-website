@@ -5,12 +5,11 @@ const vertexShader = `
   uniform float u_time;
   uniform vec2 u_mouse;
   uniform float u_intensity;
-  uniform float u_phase; // 0 = Calm, 1 = Chaos, 2 = Structure
 
   varying vec2 vUv;
   varying vec3 vNormal;
   varying float vDisplacement;
-  varying float vPhaseState;
+  varying float vCycleState;
 
   // --- Noise Functions ---
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -78,45 +77,54 @@ const vertexShader = `
     return p;
   }
 
+  // Функция для плавного смешивания шумов
+  float blendNoise(vec3 pos, float time) {
+     float n1 = snoise(pos * 1.5 + time * 0.1); // Медленный, крупный (Спокойствие)
+     float n2 = snoise(pos * 3.0 + time * 0.3); // Средний, динамичный
+     float n3 = snoise(pos * 6.0 + time * 0.8); // Быстрый, мелкий (Хаос)
+     
+     // Цикличный миксер: 0..1..0..1
+     // Используем медленный синус для глобального состояния
+     float cycle = sin(time * 0.2) * 0.5 + 0.5; 
+     
+     // Смешиваем шумы на основе цикла
+     return mix(n1, n3 * 0.5 + n2 * 0.3, cycle); 
+  }
+
   void main() {
     vUv = uv;
+    vNormal = normalize(normalMatrix * normal);
     
-    // Базовый шум
-    float nSmooth = snoise(position * 1.5 + u_time * 0.1);
-    float nChaos = snoise(fold4D(position * 2.0 + u_time * 0.4));
+    // Глобальный цикл дыхания (0.0 - Спокойствие, 1.0 - Хаос/Структура)
+    float cycle = sin(u_time * 0.2) * 0.5 + 0.5;
+    vCycleState = cycle;
     
-    vec3 finalPos = position;
-    float disp = 0.0;
-
-    if (u_phase < 1.0) { 
-       // Фаза 1: Спокойствие -> Хаос
-       float t = smoothstep(0.0, 1.0, u_phase);
-       disp = mix(nSmooth * 0.2, nChaos * 0.6, t);
-       finalPos = position + normal * disp;
-    } else if (u_phase < 2.0) {
-       // Фаза 2: Хаос -> Структура
-       float t = smoothstep(0.0, 1.0, u_phase - 1.0);
-       vec3 structPos = quantize(position + normal * nChaos * 0.3, 3.0);
-       finalPos = mix(position + normal * nChaos * 0.6, structPos, t);
-       disp = nChaos;
-    } else {
-       // Фаза 3: Структура -> Спокойствие
-       float t = smoothstep(0.0, 1.0, u_phase - 2.0);
-       vec3 structPos = quantize(position, 3.0);
-       finalPos = mix(structPos, position + normal * nSmooth * 0.2, t);
-       disp = mix(0.5, nSmooth * 0.2, t);
-    }
+    // Вычисляем смещение
+    float noiseVal = blendNoise(position, u_time);
     
     // Реакция на мышь
     float mouseDist = distance(uv, u_mouse);
-    float interact = smoothstep(0.3, 0.0, mouseDist) * u_intensity;
-    finalPos += normal * interact * 0.5;
+    float interact = smoothstep(0.4, 0.0, mouseDist) * u_intensity;
 
-    vDisplacement = disp;
-    vNormal = normalize(normalMatrix * normal);
-    vPhaseState = u_phase;
+    // Кристаллизация (Structure) появляется на пиках другого цикла
+    // cos вместо sin, чтобы фазы были сдвинуты
+    float structCycle = smoothstep(0.7, 1.0, cos(u_time * 0.15)); 
+    
+    // Применяем дискретизацию (Low Poly эффект) только когда structCycle высок
+    vec3 pos = position;
+    if (structCycle > 0.01) {
+       float grid = 4.0;
+       vec3 quantized = floor(pos * grid) / grid;
+       pos = mix(pos, quantized, structCycle);
+    }
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPos, 1.0);
+    // Финальное смещение вершин
+    float displacement = noiseVal + interact;
+    vDisplacement = displacement; // Для цвета
+
+    vec3 newPos = pos + normal * displacement * 0.4;
+    
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
   }
 `;
 
@@ -125,7 +133,7 @@ const fragmentShader = `
   
   varying vec3 vNormal;
   varying float vDisplacement;
-  varying float vPhaseState;
+  varying float vCycleState;
 
   void main() {
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
@@ -147,13 +155,13 @@ const fragmentShader = `
     // Инициализация цвета
     vec3 finalColor = cDark;
     
-    // Плавное смешивание фаз
-    // vPhaseState меняется от 0 до 3 плавно (благодаря lerp в JS)
+    // Синусоидальное дыхание - бесконечный цикл без резких переходов
+    // vCycleState: 0 = спокойствие, 0.5 = хаос, 1.0 = структура, затем обратно
     
-    if (vPhaseState < 1.0) {
-        // --- ФАЗА 1: СПОКОЙСТВИЕ (0 -> 1) ---
+    if (vCycleState < 0.5) {
+        // --- СПОКОЙСТВИЕ: ДЫХАНИЕ (0 -> 0.5) ---
         // От темного к синему с золотыми прожилками
-        float t = smoothstep(0.0, 1.0, vPhaseState);
+        float t = smoothstep(0.0, 0.5, vCycleState);
         
         // Органический шум для цвета
         float colorNoise = smoothstep(0.3, 0.7, vDisplacement + 0.5);
@@ -163,10 +171,10 @@ const fragmentShader = `
         
         finalColor = calmColor;
     } 
-    else if (vPhaseState < 2.0) {
-        // --- ФАЗА 2: ХАОС (1 -> 2) ---
-        // Переход от Синего к Плазме
-        float t = smoothstep(0.0, 1.0, vPhaseState - 1.0);
+    else if (vCycleState < 1.0) {
+        // --- ХАОС & СТРУКТУРА (0.5 -> 1.0) ---
+        // Переход от Синего к Плазме и кристаллизация
+        float t = smoothstep(0.5, 1.0, vCycleState);
         
         // Агрессивное искажение цвета от смещения
         float chaosLevel = abs(sin(vDisplacement * 10.0 + u_time * 2.0));
@@ -177,32 +185,13 @@ const fragmentShader = `
         
         // Смешиваем с предыдущей фазой для плавности
         finalColor = mix(vec3(0.05, 0.1, 0.3), chaosColor, t);
-    } 
-    else if (vPhaseState < 3.0) {
-        // --- ФАЗА 3: СТРУКТУРА (2 -> 3) ---
-        // Переход от Плазмы к Золотой Сетке
-        float t = smoothstep(0.0, 1.0, vPhaseState - 2.0);
-        
-        // Кристаллическая решетка
-        float grid = step(0.92, fract(vDisplacement * 20.0));
-        
-        vec3 structColor = mix(cDark, cGold, grid); // Золотая сетка на темном
-        structColor += cPlasma * 0.2; // Остаточное свечение плазмы
-        
-        // Смешиваем с хаосом
-        vec3 prevChaosBase = mix(cBlue, cPlasma, 0.5);
-        finalColor = mix(prevChaosBase, structColor, t);
     }
-    else {
-        // --- ВОЗВРАТ (3 -> 0) ---
-        float t = smoothstep(0.0, 1.0, vPhaseState - 3.0);
-        
-        // Растворение структуры в темноту
-        float grid = step(0.92, fract(vDisplacement * 20.0));
-        vec3 structColor = mix(cDark, cGold, grid);
-        
-        finalColor = mix(structColor, cDark, t);
-    }
+    
+    // Кристаллическая решетка появляется на пиках и спадает
+    float structIntensity = smoothstep(0.3, 1.0, sin(vCycleState * 3.14159)) * 0.5;
+    float grid = step(0.92, fract(vDisplacement * 20.0));
+    vec3 structColor = mix(cDark, cGold, grid * structIntensity);
+    finalColor = mix(finalColor, structColor, structIntensity * 0.3);
 
     // Финальные штрихи
     // Добавляем "дорогой" блик
@@ -220,7 +209,6 @@ export const FluidMaterial = shaderMaterial(
     u_time: 0,
     u_mouse: new THREE.Vector2(0.5, 0.5),
     u_intensity: 0.0,
-    u_phase: 0.0,
   },
   vertexShader,
   fragmentShader
