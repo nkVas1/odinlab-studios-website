@@ -10,6 +10,7 @@ const nextConfig = {
     unoptimized: false,
     formats: ["image/webp", "image/avif"],
   },
+  staticPageGenerationTimeout: 1,
 };
 
 export default nextConfig;

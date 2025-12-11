@@ -1,21 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { gsap } from "gsap";
+import Scene from "@/components/canvas/Scene";
+import FloatingShape from "@/components/canvas/FloatingShape";
 import ServicesScroll from "@/components/sections/ServicesScroll";
 import ContactSection from "@/components/sections/ContactSection";
-
-// Динамический импорт Scene компонента без SSR
-const Scene = dynamic(() => import("@/components/canvas/Scene"), {
-  ssr: false,
-  loading: () => <div className="fixed inset-0 bg-odin-dark" />,
-});
-
-const FloatingShape = dynamic(
-  () => import("@/components/canvas/FloatingShape"),
-  { ssr: false }
-);
 
 export default function Home() {
   const heroTextRef = useRef<HTMLDivElement>(null);
@@ -38,9 +28,11 @@ export default function Home() {
 
   return (
     <>
-      <Scene>
-        <FloatingShape />
-      </Scene>
+      <Suspense fallback={<div className="fixed inset-0 bg-odin-dark" />}>
+        <Scene>
+          <FloatingShape />
+        </Scene>
+      </Suspense>
 
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20">
         <div className="z-10 flex flex-col items-center text-center mix-blend-difference">
