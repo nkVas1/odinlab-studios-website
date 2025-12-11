@@ -28,38 +28,42 @@ export default function FloatingFluid() {
     if (!materialRef.current) return;
 
     const time = state.clock.getElapsedTime();
-    materialRef.current.u_time = time;
+    // Замедляем время для шейдера в 2 раза для плавности
+    materialRef.current.u_time = time * 0.5;
 
-    // --- ЛОГИКА ЦИКЛОВ ЖИЗНИ (0 -> 3) ---
-    // Цикл длится 18 секунд:
-    // 0-6s: Спокойствие (фаза 0->1)
-    // 6-10s: Хаос (фаза 1->2)
-    // 10-14s: Структура (фаза 2->3)
-    // 14-18s: Переход в начало (3->0)
-    
-    const cycleDuration = 18.0;
+    // --- ЛОГИКА ЦИКЛОВ ЖИЗНИ ---
+    // Увеличиваем цикл до 24 секунд для большей медитативности
+    const cycleDuration = 24.0; 
     const t = time % cycleDuration;
-    let phase = 0;
-
-    if (t < 6.0) {
-        phase = THREE.MathUtils.mapLinear(t, 0, 6, 0, 1);
-    } else if (t < 10.0) {
-        phase = THREE.MathUtils.mapLinear(t, 6, 10, 1, 2);
-    } else if (t < 14.0) {
-        phase = THREE.MathUtils.mapLinear(t, 10, 14, 2, 3);
-    } else {
-        phase = THREE.MathUtils.mapLinear(t, 14, 18, 3, 0);
-    }
-
-    materialRef.current.u_phase = phase;
-
-    // Плавное следование за мышью
-    materialRef.current.u_mouse.lerp(state.pointer, 0.05);
     
-    // Движение самого объекта
-    const rotSpeed = (phase > 1.8 && phase < 2.8) ? 0.02 : 0.1;
-    meshRef.current.rotation.y += rotSpeed * 0.5;
-    meshRef.current.rotation.x = Math.sin(time * 0.2) * 0.2;
+    // Целевая фаза
+    let targetPhase = 0;
+    if (t < 8.0) targetPhase = THREE.MathUtils.mapLinear(t, 0, 8, 0, 1);
+    else if (t < 14.0) targetPhase = THREE.MathUtils.mapLinear(t, 8, 14, 1, 2);
+    else if (t < 20.0) targetPhase = THREE.MathUtils.mapLinear(t, 14, 20, 2, 3);
+    else targetPhase = THREE.MathUtils.mapLinear(t, 20, 24, 3, 0);
+
+    // ВАЖНО: Плавная интерполяция текущей фазы к целевой
+    // Это уберет резкие скачки между циклами
+    materialRef.current.u_phase = THREE.MathUtils.lerp(
+        materialRef.current.u_phase, 
+        targetPhase, 
+        0.05 // Очень плавный коэффициент
+    );
+
+    // Следование за мышью с инерцией
+    materialRef.current.u_mouse.lerp(state.pointer, 0.03); // Еще плавнее (было 0.05)
+    
+    // Вращение объекта
+    // Используем плавный sin для изменения скорости, чтобы не было рывков
+    // Базовая скорость очень низкая
+    const baseRotSpeed = 0.05;
+    const variableSpeed = Math.sin(time * 0.2) * 0.05; // Мягкая вариация
+    
+    meshRef.current.rotation.y += (baseRotSpeed + variableSpeed) * 0.01; // Делим на 100 для медленности
+    
+    // Легкое покачивание
+    meshRef.current.rotation.x = Math.sin(time * 0.1) * 0.1;
   });
 
   return (

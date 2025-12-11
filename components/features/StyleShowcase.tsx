@@ -93,20 +93,21 @@ const STYLES = {
     id: "glass", 
     label: "Glass", 
     icon: <Droplets size={20} />,
-    desc: "Глассморфизм: прозрачность, размытие фона.",
+    desc: "Глассморфизм: многослойность, глубина.",
     vars: { 
-      "--bg-page": "linear-gradient(45deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%)", 
-      "--bg-card": "rgba(255,255,255,0.2)", 
-      "--text-main": "#fff", 
-      "--text-sec": "rgba(255,255,255,0.8)", 
-      "--accent": "#fff", 
-      "--radius": "20px", 
-      "--border": "1px solid rgba(255,255,255,0.3)", 
+      "--bg-page": "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", // Пастельный градиент
+      "--bg-card": "rgba(255, 255, 255, 0.45)", // Более прозрачный белый
+      "--text-main": "#1f2937", // Темно-серый для читаемости
+      "--text-sec": "rgba(31, 41, 55, 0.6)",
+      "--accent": "#2563eb",
+      "--radius": "24px", 
+      "--border": "1px solid rgba(255, 255, 255, 0.6)", // Светлая граница
       "--font-h": '"Inter", sans-serif', 
-      "--shadow": "0 8px 32px 0 rgba(31,38,135,0.37)", 
+      "--shadow": "0 8px 32px 0 rgba(31, 38, 135, 0.15)", // Мягкая тень
       "--btn-shape": "50px", 
       "--layout-gap": "24px", 
-      "--texture": "none" 
+      "--texture": "none",
+      "--backdrop": "blur(12px) saturate(180%)" // Ключевой эффект
     }
   },
   y2k: {
@@ -197,66 +198,158 @@ type StyleKey = keyof typeof STYLES;
 const MockWebsite = ({ currentStyle }: { currentStyle: any }) => {
   return (
     <div 
-      className="w-full h-full p-4 md:p-8 overflow-y-auto transition-all duration-500"
+      className="w-full h-full overflow-y-auto transition-all duration-500 relative"
       style={{
         background: currentStyle.vars["--bg-page"],
         color: currentStyle.vars["--text-main"],
         fontFamily: currentStyle.vars["--font-h"],
-        backgroundImage: currentStyle.vars["--texture"] !== 'none' ? currentStyle.vars["--texture"] : 'none'
+        backgroundImage: currentStyle.vars["--texture"] !== 'none' ? currentStyle.vars["--texture"] : undefined
       } as React.CSSProperties}
     >
-      {/* Header */}
-      <div className="flex justify-between items-center mb-10 border-b pb-4" style={{borderColor: currentStyle.vars["--border"] === 'none' ? 'rgba(0,0,0,0.1)' : currentStyle.vars["--border"]}}>
-        <h1 className="text-2xl font-bold">BRAND</h1>
-        <button style={{
-          background: currentStyle.vars["--accent"],
-          color: currentStyle.id === 'y2k' || currentStyle.id === 'cyberpunk' ? 'black' : 'white',
-          padding: '8px 16px',
-          borderRadius: currentStyle.vars["--btn-shape"],
-          border: currentStyle.vars["--border"],
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          transition: 'all 0.3s'
-        }}>
-          Login
-        </button>
-      </div>
-      
-      {/* Main Content */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div 
-          className="aspect-square flex items-center justify-center p-8"
-          style={{
-            background: currentStyle.vars["--bg-card"],
-            borderRadius: currentStyle.vars["--radius"],
-            border: currentStyle.vars["--border"],
-            boxShadow: currentStyle.vars["--shadow"]
-          }}
-        >
-          <div className="text-4xl md:text-5xl font-bold text-center leading-tight">
-            DESIGN <br/>
-            <span style={{color: currentStyle.vars["--accent"]}}>SYSTEM</span>
-          </div>
-        </div>
-        
-        <div className="flex flex-col justify-center gap-4">
-          <h2 className="text-4xl font-bold">Headline Text</h2>
-          <p style={{color: currentStyle.vars["--text-sec"]}}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-            Стиль {currentStyle.label} меняет восприятие этого текста.
-          </p>
-          <div className="h-2 w-full rounded-full overflow-hidden mt-4" style={{background: 'rgba(0,0,0,0.1)'}}>
-            <div className="h-full w-2/3" style={{background: currentStyle.vars["--accent"]}} />
-          </div>
-        </div>
-      </div>
+      {/* Декоративные пятна для Glassmorphism (видны только на прозрачных фонах) */}
+      {currentStyle.id === 'glass' && (
+         <>
+           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-400/30 blur-[80px]" />
+           <div className="absolute bottom-[10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-400/30 blur-[80px]" />
+         </>
+      )}
 
-      {/* Footer note */}
-      <div className="mt-12 text-center opacity-50 text-sm" style={{color: currentStyle.vars["--text-sec"]}}>
-        POWERED BY ODINLAB
+      <div className="relative z-10 p-6 md:p-10 max-w-5xl mx-auto flex flex-col gap-10">
+        
+        {/* Header */}
+        <header className="flex justify-between items-center">
+          <div className="text-2xl font-bold tracking-tighter flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: currentStyle.vars["--accent"], color: currentStyle.id === 'y2k' ? 'black' : 'white' }}>O</div>
+            <span>ODIN<span style={{opacity: 0.6}}>UI</span></span>
+          </div>
+          <nav className="hidden md:flex gap-6 text-sm font-medium opacity-70">
+            <span>Product</span>
+            <span>Solutions</span>
+            <span>Pricing</span>
+          </nav>
+          <button 
+            style={{
+              background: currentStyle.vars["--accent"],
+              color: currentStyle.id === 'y2k' || currentStyle.id === 'cyberpunk' ? 'black' : 'white',
+              borderRadius: currentStyle.vars["--btn-shape"],
+              border: currentStyle.vars["--border"],
+              boxShadow: currentStyle.vars["--shadow"],
+              padding: '10px 24px',
+              fontWeight: 'bold',
+              backdropFilter: currentStyle.vars["--backdrop"] || 'none'
+            } as React.CSSProperties}
+          >
+            Start Free
+          </button>
+        </header>
+
+        {/* Hero Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-4">
+          <div className="space-y-6">
+             <div 
+               className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-widest mb-2"
+               style={{ 
+                 background: currentStyle.vars["--bg-card"], 
+                 border: currentStyle.vars["--border"],
+                 borderRadius: currentStyle.vars["--btn-shape"],
+                 backdropFilter: currentStyle.vars["--backdrop"] || 'none'
+               } as React.CSSProperties}
+             >
+               v2.0 Released
+             </div>
+             
+             <h1 className="text-5xl md:text-7xl font-bold leading-[0.95]">
+               Design <br/>
+               <span style={{ 
+                 color: currentStyle.id === 'paper' ? 'inherit' : currentStyle.vars["--accent"],
+                 textDecoration: currentStyle.id === 'paper' ? 'underline decoration-wavy' : 'none'
+               }}>
+                 Reality
+               </span>
+             </h1>
+             
+             <p className="text-lg leading-relaxed max-w-md" style={{ color: currentStyle.vars["--text-sec"] }}>
+               Создавайте интерфейсы будущего сегодня. Адаптивность, доступность и красота в каждой строчке кода.
+             </p>
+
+             <div className="flex gap-4 pt-4">
+                <button 
+                   className="flex-1 py-4 text-center font-bold text-lg hover:brightness-110 transition-all"
+                   style={{
+                     background: currentStyle.vars["--text-main"],
+                     color: currentStyle.vars["--bg-page"].includes('gradient') ? 'black' : currentStyle.vars["--bg-page"],
+                     borderRadius: currentStyle.vars["--btn-shape"],
+                     boxShadow: currentStyle.vars["--shadow"]
+                   } as React.CSSProperties}
+                >
+                  Get Started
+                </button>
+                <button 
+                   className="flex-1 py-4 text-center font-bold text-lg border hover:bg-black/5 transition-all"
+                   style={{
+                     borderColor: currentStyle.vars["--text-main"],
+                     borderRadius: currentStyle.vars["--btn-shape"]
+                   } as React.CSSProperties}
+                >
+                  Demo
+                </button>
+             </div>
+          </div>
+
+          {/* Feature Card (Visual) */}
+          <div 
+            className="aspect-square relative flex items-center justify-center p-8 group"
+            style={{
+              background: currentStyle.vars["--bg-card"],
+              borderRadius: currentStyle.vars["--radius"],
+              border: currentStyle.vars["--border"],
+              boxShadow: currentStyle.vars["--shadow"],
+              backdropFilter: currentStyle.vars["--backdrop"] || 'none'
+            } as React.CSSProperties}
+          >
+             {/* Abstract Shapes */}
+             <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-current opacity-10 rounded-full animate-pulse" style={{ color: currentStyle.vars["--accent"] }} />
+                <div className="absolute top-1/4 right-1/4 w-16 h-16 border-4 border-current opacity-20 rounded-full" style={{ color: currentStyle.vars["--accent"] }} />
+             </div>
+             
+             <div className="relative z-10 text-center">
+                <div className="text-6xl mb-2">✨</div>
+                <div className="text-2xl font-bold">Magic UI</div>
+                <div className="text-sm opacity-60">Component Library</div>
+             </div>
+          </div>
+        </div>
+
+        {/* Stats / Grid Section */}
+        <div 
+          className="grid grid-cols-3 gap-4 md:gap-8" 
+          style={{ gap: currentStyle.vars["--layout-gap"] }}
+        >
+           {[
+             { label: 'Users', val: '10K+' },
+             { label: 'Revenue', val: '$2M' },
+             { label: 'Rating', val: '4.9' }
+           ].map((stat, i) => (
+             <div 
+               key={i} 
+               className="p-6 text-center"
+               style={{
+                  background: currentStyle.vars["--bg-card"],
+                  borderRadius: currentStyle.vars["--radius"],
+                  border: currentStyle.vars["--border"],
+                  backdropFilter: currentStyle.vars["--backdrop"] || 'none'
+               } as React.CSSProperties}
+             >
+                <div className="text-3xl font-bold mb-1" style={{ color: currentStyle.vars["--accent"] }}>{stat.val}</div>
+                <div className="text-xs uppercase tracking-wider opacity-60">{stat.label}</div>
+             </div>
+           ))}
+        </div>
+
       </div>
     </div>
-  )
+  );
 };
 
 export default function StyleShowcase() {
@@ -271,10 +364,11 @@ export default function StyleShowcase() {
         <div className="w-full lg:w-1/3 space-y-8">
           <div>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
-              Матрица <span className="text-odin-gold">Стилей</span>
+              Какой <span className="text-odin-gold">стиль</span> подходит вам?
             </h2>
-            <p className="text-odin-muted text-lg">
-              Выберите ячейку, чтобы загрузить новую визуальную реальность.
+            <p className="text-odin-muted text-lg leading-relaxed">
+              Дизайн — это язык. Выберите диалект, на котором ваш бренд будет говорить с аудиторией. 
+              Кликайте по стилям ниже, чтобы увидеть мгновенное преображение.
             </p>
           </div>
 

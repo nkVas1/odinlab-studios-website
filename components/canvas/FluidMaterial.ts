@@ -121,40 +121,61 @@ const vertexShader = `
 `;
 
 const fragmentShader = `
+  uniform float u_time;
+  
   varying vec3 vNormal;
   varying float vDisplacement;
   varying float vPhaseState;
+
+  // Функция для плавного смешивания 3 цветов
+  vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+      return a + b * cos(6.28318 * (c * t + d));
+  }
 
   void main() {
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
     vec3 normal = normalize(vNormal);
     
-    // OdinLab colors
-    vec3 cDark = vec3(0.04, 0.09, 0.16);
-    vec3 cBlue = vec3(0.12, 0.23, 0.54);
-    vec3 cGold = vec3(0.98, 0.75, 0.16);
-    vec3 cNeon = vec3(0.0, 1.0, 0.8);
+    // Базовые цвета OdinLab (более глубокие и спокойные)
+    vec3 cDark = vec3(0.02, 0.05, 0.1); 
+    vec3 cBlue = vec3(0.08, 0.15, 0.4);
+    vec3 cGold = vec3(0.8, 0.6, 0.2); // Менее яркое золото
+    vec3 cNeon = vec3(0.0, 0.8, 0.9); // Циан вместо кислотного неона
 
-    // Френель
-    float fresnel = pow(1.0 - dot(viewDir, normal), 2.0);
+    // Френель (свечение по краям) - делаем мягче
+    float fresnel = pow(1.0 - dot(viewDir, normal), 3.0);
     
-    // Окрашивание в зависимости от фазы
     vec3 finalColor = cDark;
     
+    // Используем sin(u_time) для бесконечно плавной пульсации внутри фаз
+    float pulse = sin(u_time * 0.5) * 0.5 + 0.5;
+
     if (vPhaseState < 1.0) {
-        // Calm to Chaos
-        finalColor = mix(cBlue, cGold, vDisplacement * 2.0 + 0.2);
+        // Фаза 1: Calm -> Chaos
+        // Плавный градиент от синего к золоту
+        float t = smoothstep(0.0, 1.0, vDisplacement * 1.5 + 0.5); 
+        finalColor = mix(cBlue, cGold, t * 0.7); // Ограничиваем влияние золота
     } else if (vPhaseState < 2.0) {
-        // Chaos to Structure
-        finalColor = mix(cGold, cNeon, abs(sin(vDisplacement * 10.0)));
+        // Фаза 2: Chaos (Пик активности)
+        // Здесь разрешаем немного неона, но смешиваем его с темной базой
+        // Используем vDisplacement для органичности
+        float chaosLevel = smoothstep(0.4, 0.8, abs(sin(vDisplacement * 8.0 + u_time)));
+        
+        // Кислота появляется только на пиках
+        vec3 chaosColor = mix(cGold, cNeon, chaosLevel);
+        finalColor = mix(cDark, chaosColor, 0.6); 
     } else {
-        // Structure
-        float grid = step(0.9, fract(vDisplacement * 10.0));
-        finalColor = mix(cBlue, cGold, grid);
+        // Фаза 3: Structure
+        // Элегантная сетка
+        float grid = step(0.95, fract(vDisplacement * 15.0)); // Тонкие линии
+        finalColor = mix(cBlue * 0.5, cGold, grid);
     }
 
-    // Подсветка краев
-    finalColor += cGold * fresnel * 0.4;
+    // Мягкий блик
+    finalColor += cGold * fresnel * 0.3;
+    
+    // Общее тонирование для целостности
+    finalColor = mix(finalColor, cDark, 0.2);
 
     gl_FragColor = vec4(finalColor, 1.0);
   }
