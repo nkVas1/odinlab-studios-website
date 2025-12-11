@@ -38,6 +38,12 @@ export default function ServicesScroll() {
   const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Проверка window для SSR безопасности
+    if (typeof window === "undefined") return;
+
+    // Проверка что refs существуют
+    if (!sectionRef.current || !triggerRef.current) return;
+
     const pin = gsap.fromTo(
       sectionRef.current,
       { translateX: 0 },

@@ -9,6 +9,9 @@ export default function ContactSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Проверка window для SSR безопасности
+    if (typeof window === "undefined") return;
+
     if (!sectionRef.current) return;
 
     gsap.fromTo(

@@ -1,40 +1,57 @@
 "use client";
 
 import { useEffect, useRef, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { gsap } from "gsap";
-import Scene from "@/components/canvas/Scene";
-import FloatingShape from "@/components/canvas/FloatingShape";
-import ServicesScroll from "@/components/sections/ServicesScroll";
-import ContactSection from "@/components/sections/ContactSection";
+
+const Scene = dynamic(() => import("@/components/canvas/Scene"), { ssr: false });
+const FloatingShape = dynamic(
+  () => import("@/components/canvas/FloatingShape"),
+  { ssr: false }
+);
+const ServicesScroll = dynamic(
+  () => import("@/components/sections/ServicesScroll"),
+  { ssr: false }
+);
+const ContactSection = dynamic(
+  () => import("@/components/sections/ContactSection"),
+  { ssr: false }
+);
 
 export default function Home() {
   const heroTextRef = useRef<HTMLDivElement>(null);
   const subTextRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const tl = gsap.timeline();
 
-    tl.fromTo(
-      heroTextRef.current,
-      { y: 100, opacity: 0, skewY: 5 },
-      { y: 0, opacity: 1, skewY: 0, duration: 1.5, ease: "power4.out", delay: 0.5 }
-    ).fromTo(
-      subTextRef.current,
-      { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: "power2.out" },
-      "-=1"
-    );
+    if (heroTextRef.current) {
+      tl.fromTo(
+        heroTextRef.current,
+        { y: 100, opacity: 0, skewY: 5 },
+        { y: 0, opacity: 1, skewY: 0, duration: 1.5, ease: "power4.out", delay: 0.5 }
+      );
+    }
+
+    if (subTextRef.current) {
+      tl.fromTo(
+        subTextRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: "power2.out" },
+        "-=1"
+      );
+    }
   }, []);
 
   return (
     <>
-      {/* Временно отключен Canvas из-за ошибки React */}
-      {/* <Suspense fallback={<div className="fixed inset-0 bg-odin-dark" />}>
+      <Suspense fallback={<div className="fixed inset-0 bg-odin-dark" />}>
         <Scene>
           <FloatingShape />
         </Scene>
-      </Suspense> */}
-      <div className="fixed inset-0 -z-10 h-full w-full bg-gradient-to-br from-odin-dark via-odin-dark/95 to-odin-blue/20" />
+      </Suspense>
 
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20">
         <div className="z-10 flex flex-col items-center text-center mix-blend-difference">
@@ -74,8 +91,13 @@ export default function Home() {
         </div>
       </section>
 
-      <ServicesScroll />
-      <ContactSection />
+      <Suspense fallback={<div className="min-h-screen bg-odin-dark" />}>
+        <ServicesScroll />
+      </Suspense>
+
+      <Suspense fallback={<div className="min-h-screen bg-odin-dark" />}>
+        <ContactSection />
+      </Suspense>
     </>
   );
 }
