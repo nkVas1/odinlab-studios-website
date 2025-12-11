@@ -10,10 +10,14 @@ export default function FloatingShape() {
 
   useFrame((state) => {
     if (!meshRef.current) return;
+    
+    // Безопасное получение значений pointer
+    const x = state.pointer?.x ?? 0;
+    const y = state.pointer?.y ?? 0;
+    
     meshRef.current.rotation.x = state.clock.getElapsedTime() * 0.2;
     meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.3;
 
-    const { x, y } = state.pointer;
     meshRef.current.position.x = THREE.MathUtils.lerp(
       meshRef.current.position.x,
       x * 0.5,

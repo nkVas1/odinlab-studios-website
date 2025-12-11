@@ -6,9 +6,6 @@ import Footer from "@/components/ui/Footer";
 import Cursor from "@/components/ui/Cursor";
 import "./globals.css";
 
-// Отключить SSG для всех маршрутов с Canvas/3D
-export const dynamic = "force-dynamic";
-
 const inter = Inter({
   subsets: ["cyrillic", "latin"],
   variable: "--font-inter",
