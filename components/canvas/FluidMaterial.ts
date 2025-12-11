@@ -139,65 +139,51 @@ const fragmentShader = `
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
     vec3 normal = normalize(vNormal);
     
-    // --- НОВАЯ ПАЛИТРА ODINLAB ---
-    // База: Глубокая бездна
+    // --- ПАЛИТРА ---
     vec3 cDark = vec3(0.01, 0.02, 0.05); 
-    // Спокойствие: Благородный синий
-    vec3 cBlue = vec3(0.05, 0.1, 0.3);
-    // Хаос: Энергичная плазма (Индиго -> Маджента) вместо Циана
-    vec3 cPlasma = vec3(0.4, 0.0, 0.8); 
-    // Структура: Чистое золото
-    vec3 cGold = vec3(1.0, 0.7, 0.1); 
+    vec3 cBlue = vec3(0.05, 0.1, 0.4);
+    vec3 cPlasma = vec3(0.5, 0.0, 1.0); // Более насыщенный индиго
+    vec3 cGold = vec3(1.0, 0.8, 0.2); 
 
-    // Френель (свечение по краям)
-    float fresnel = pow(1.0 - dot(viewDir, normal), 3.0);
+    // --- ЛОГИКА СМЕШИВАНИЯ (БЕСШОВНАЯ) ---
+    // Мы используем vCycleState (синус времени) как главный миксер
+    // 0.0 = Полное спокойствие
+    // 1.0 = Пик Хаоса
     
-    // Инициализация цвета
-    vec3 finalColor = cDark;
+    float chaosMix = smoothstep(0.2, 0.8, vCycleState); // Мягкий порог входа в хаос
     
-    // Синусоидальное дыхание - бесконечный цикл без резких переходов
-    // vCycleState: 0 = спокойствие, 0.5 = хаос, 1.0 = структура, затем обратно
+    // 1. Базовый цвет (Спокойствие)
+    // Шум влияет на цвет: синий с редкими золотыми искрами
+    float calmNoise = smoothstep(0.4, 0.6, vDisplacement + 0.3);
+    vec3 baseColor = mix(cDark, cBlue, 0.8);
+    baseColor = mix(baseColor, cGold, calmNoise * 0.2); // +20% золота
     
-    if (vCycleState < 0.5) {
-        // --- СПОКОЙСТВИЕ: ДЫХАНИЕ (0 -> 0.5) ---
-        // От темного к синему с золотыми прожилками
-        float t = smoothstep(0.0, 0.5, vCycleState);
-        
-        // Органический шум для цвета
-        float colorNoise = smoothstep(0.3, 0.7, vDisplacement + 0.5);
-        
-        vec3 calmColor = mix(cDark, cBlue, 0.8);
-        calmColor = mix(calmColor, cGold * 0.5, colorNoise * 0.3); // Легкое золото
-        
-        finalColor = calmColor;
-    } 
-    else if (vCycleState < 1.0) {
-        // --- ХАОС & СТРУКТУРА (0.5 -> 1.0) ---
-        // Переход от Синего к Плазме и кристаллизация
-        float t = smoothstep(0.5, 1.0, vCycleState);
-        
-        // Агрессивное искажение цвета от смещения
-        float chaosLevel = abs(sin(vDisplacement * 10.0 + u_time * 2.0));
-        vec3 chaosColor = mix(cBlue, cPlasma, chaosLevel);
-        
-        // Вспышки золота на пиках хаоса
-        chaosColor += cGold * smoothstep(0.8, 1.0, chaosLevel) * t;
-        
-        // Смешиваем с предыдущей фазой для плавности
-        finalColor = mix(vec3(0.05, 0.1, 0.3), chaosColor, t);
-    }
+    // 2. Цвет Хаоса
+    // Плазма, реагирующая на искажения
+    float plasmaNoise = abs(sin(vDisplacement * 8.0));
+    vec3 activeColor = mix(cBlue, cPlasma, plasmaNoise);
+    activeColor += cGold * smoothstep(0.9, 1.0, plasmaNoise); // Золотые пики
     
-    // Кристаллическая решетка появляется на пиках и спадает
-    float structIntensity = smoothstep(0.3, 1.0, sin(vCycleState * 3.14159)) * 0.5;
-    float grid = step(0.92, fract(vDisplacement * 20.0));
-    vec3 structColor = mix(cDark, cGold, grid * structIntensity);
-    finalColor = mix(finalColor, structColor, structIntensity * 0.3);
+    // Смешиваем базу и хаос
+    vec3 finalColor = mix(baseColor, activeColor, chaosMix);
+    
+    // --- УЛУЧШЕННЫЙ ФРЕНЕЛЬ ---
+    // pow(..., 1.8) вместо 3.0 делает свечение шире (менее сфокусированным)
+    float fresnelBase = 1.0 - dot(viewDir, normal);
+    float fresnel = pow(fresnelBase, 1.8); // 1.8 = Широкое свечение
+    
+    // Делаем френель цветным (Золото + Плазма)
+    vec3 fresnelColor = mix(cGold, cPlasma, chaosMix * 0.5);
+    
+    // Добавляем свечение (Additive blending)
+    // Умножаем на 0.8 для яркости
+    finalColor += fresnelColor * fresnel * 0.8; 
+    
+    // Дополнительный "Rim Light" для объема
+    float rim = smoothstep(0.6, 1.0, fresnelBase);
+    finalColor += vec3(1.0) * rim * 0.2;
 
-    // Финальные штрихи
-    // Добавляем "дорогой" блик
-    finalColor += cGold * fresnel * 0.4;
-    
-    // Гамма-коррекция для сочности
+    // Гамма-коррекция
     finalColor = pow(finalColor, vec3(0.9));
 
     gl_FragColor = vec4(finalColor, 1.0);

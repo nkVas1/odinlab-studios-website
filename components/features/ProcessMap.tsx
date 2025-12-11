@@ -1,98 +1,152 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Search, PenTool, Code, Rocket, BarChart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, PenTool, Code, Rocket, BarChart, ChevronRight } from "lucide-react";
 
 const STEPS = [
-  { id: 1, title: "Discovery", icon: <Search />, desc: "Погружение в бизнес-процессы, анализ конкурентов и поиск инсайтов." },
-  { id: 2, title: "Design", icon: <PenTool />, desc: "Создание визуального языка, прототипирование UI/UX и анимаций." },
-  { id: 3, title: "Develop", icon: <Code />, desc: "Написание чистого кода, интеграция API и настройка CMS." },
-  { id: 4, title: "Launch", icon: <Rocket />, desc: "Тестирование, деплой на сервера и финальная оптимизация." },
-  { id: 5, title: "Scale", icon: <BarChart />, desc: "Аналитика, поддержка и развитие продукта на основе данных." },
+  { 
+    id: 1, 
+    title: "Discovery", 
+    icon: <Search />, 
+    short: "Исследование",
+    desc: "Мы погружаемся в вашу нишу. Глубинные интервью, анализ конкурентов и составление CJM (Customer Journey Map). Мы не начинаем рисовать, пока не поймем 'Зачем?'.",
+    color: "bg-blue-500"
+  },
+  { 
+    id: 2, 
+    title: "Art Direction", 
+    icon: <PenTool />, 
+    short: "Дизайн-концепция",
+    desc: "Создание уникального визуального языка. Мудборды, 3D-скетчи и интерактивные прототипы в Figma. Вы увидите свой продукт еще до написания кода.",
+    color: "bg-purple-500"
+  },
+  { 
+    id: 3, 
+    title: "Development", 
+    icon: <Code />, 
+    short: "Разработка",
+    desc: "Кодинг на стеке 2025 года (Next.js 15, WebGL). Чистая архитектура, микросервисы и безупречная SEO-оптимизация под капотом.",
+    color: "bg-indigo-500"
+  },
+  { 
+    id: 4, 
+    title: "Launch", 
+    icon: <Rocket />, 
+    short: "Запуск",
+    desc: "QA-тестирование, нагрузочные тесты и настройка CI/CD. Мягкий запуск и мониторинг первых метрик.",
+    color: "bg-orange-500"
+  },
+  { 
+    id: 5, 
+    title: "Evolution", 
+    icon: <BarChart />, 
+    short: "Масштабирование",
+    desc: "Продукт живет. Мы анализируем поведение пользователей, внедряем новые фичи и помогаем расти.",
+    color: "bg-green-500"
+  },
 ];
 
 export default function ProcessMap() {
   const [activeStep, setActiveStep] = useState(1);
 
   return (
-    <section className="py-24 bg-odin-dark overflow-hidden">
-      <div className="container mx-auto px-6">
+    <section className="py-32 bg-odin-dark relative overflow-hidden">
+      {/* Фоновый элемент */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
+
+      <div className="container mx-auto px-6 relative z-10">
         
-        <div className="mb-20 text-center">
-          <h2 className="font-display text-4xl md:text-6xl font-bold text-white mb-6">
-            Путь к <span className="text-odin-gold">Совершенству</span>
-          </h2>
-          <p className="text-odin-muted text-lg max-w-2xl mx-auto">
-            Мы превратили хаос творчества в системный инженерный процесс. 
-            Каждый этап — это фундамент для следующего.
-          </p>
-        </div>
-
-        {/* Интерактивная Линия Времени */}
-        <div className="relative">
-          {/* Соединительная Линия (Фон) */}
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 hidden md:block" />
+        <div className="flex flex-col lg:flex-row gap-16 items-start">
           
-          {/* Прогресс Линия (Активная) */}
-          <motion.div 
-            className="absolute top-1/2 left-0 h-1 bg-odin-gold -translate-y-1/2 hidden md:block origin-left"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: (activeStep - 1) / (STEPS.length - 1) }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
-            {STEPS.map((step) => (
-              <div 
-                key={step.id} 
-                className="group relative flex flex-col items-center cursor-pointer"
-                onMouseEnter={() => setActiveStep(step.id)}
-                onClick={() => setActiveStep(step.id)}
-              >
-                {/* Точка на линии */}
-                <motion.div 
-                  className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-colors duration-300 ${
-                    activeStep >= step.id 
-                      ? "bg-odin-gold border-odin-gold text-black" 
-                      : "bg-odin-dark border-white/20 text-gray-500 group-hover:border-white/50"
+          {/* Левая колонка: Навигация */}
+          <div className="w-full lg:w-1/3">
+            <h2 className="font-display text-4xl font-bold text-white mb-8">
+              Как мы <span className="text-odin-gold">работаем</span>
+            </h2>
+            
+            <div className="space-y-2">
+              {STEPS.map((step) => (
+                <button
+                  key={step.id}
+                  onClick={() => setActiveStep(step.id)}
+                  className={`w-full text-left p-4 rounded-xl transition-all duration-300 flex items-center justify-between group ${
+                    activeStep === step.id 
+                      ? "bg-white/10 text-white border border-white/20" 
+                      : "text-gray-500 hover:text-white hover:bg-white/5"
                   }`}
-                  whileHover={{ scale: 1.1 }}
                 >
-                  {step.icon}
-                </motion.div>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-lg transition-colors ${
+                       activeStep === step.id ? "bg-odin-gold text-black" : "bg-white/5 text-gray-500"
+                    }`}>
+                      {step.icon}
+                    </div>
+                    <div>
+                      <span className="block font-bold text-lg">{step.title}</span>
+                      <span className="text-xs uppercase tracking-wider opacity-60">{step.short}</span>
+                    </div>
+                  </div>
+                  
+                  {activeStep === step.id && (
+                    <ChevronRight className="w-5 h-5 text-odin-gold" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Правая колонка: Детализация (Карточка) */}
+          <div className="w-full lg:w-2/3">
+             <div className="relative aspect-video lg:aspect-[16/9] bg-black/50 border border-white/10 rounded-2xl overflow-hidden p-8 md:p-12 flex flex-col justify-end">
+                
+                {/* Анимированный фон карточки */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeStep}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className={`absolute inset-0 opacity-20 ${STEPS[activeStep - 1].color} blur-[100px]`}
+                  />
+                </AnimatePresence>
+
+                {/* Большая цифра */}
+                <div className="absolute top-4 right-8 text-[120px] font-display font-bold text-white/5 leading-none select-none">
+                  0{activeStep}
+                </div>
 
                 {/* Контент */}
-                <div className="mt-6 text-center">
-                  <h3 className={`font-bold text-lg mb-2 transition-colors ${
-                    activeStep >= step.id ? "text-white" : "text-gray-500"
-                  }`}>
-                    {step.title}
-                  </h3>
-                  
-                  {/* Описание (появляется только у активного) */}
-                  <div className="h-24 md:h-auto">
-                    <motion.p 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ 
-                        opacity: activeStep === step.id ? 1 : 0,
-                        height: activeStep === step.id ? "auto" : 0
-                      }}
-                      className="text-sm text-gray-400 max-w-[200px] mx-auto hidden md:block"
-                    >
-                      {step.desc}
-                    </motion.p>
-                    {/* Мобильная версия описания (всегда видна) */}
-                    <p className="text-sm text-gray-400 block md:hidden">
-                        {step.desc}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeStep}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative z-10"
+                  >
+                    <div className="flex items-center gap-4 mb-6 text-odin-gold">
+                       {STEPS[activeStep - 1].icon}
+                       <span className="text-sm font-mono uppercase tracking-widest">
+                         Step {activeStep} / {STEPS.length}
+                       </span>
+                    </div>
+                    
+                    <h3 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                      {STEPS[activeStep - 1].title}
+                    </h3>
+                    
+                    <p className="text-xl text-gray-300 leading-relaxed max-w-2xl">
+                      {STEPS[activeStep - 1].desc}
                     </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+                  </motion.div>
+                </AnimatePresence>
+             </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </section>
   );
