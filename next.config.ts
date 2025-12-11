@@ -10,9 +10,6 @@ const nextConfig = {
     unoptimized: false,
     formats: ["image/webp", "image/avif"],
   },
-  experimental: {
-    turbopack: true,
-  },
 };
 
 export default nextConfig;
