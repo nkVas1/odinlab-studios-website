@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -8,14 +8,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function SmoothScroll({ children }: { children: ReactNode }) {
-  const [isClient, setIsClient] = useState(false);
+  const lenisRef = useRef<Lenis | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
+    // Инициализация только на клиенте
+    if (typeof window === "undefined") return;
 
     try {
       const lenis = new Lenis({
@@ -26,23 +24,32 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
         smoothWheel: true,
       });
 
+      lenisRef.current = lenis;
+
+      // Подключить ScrollTrigger к Lenis событиям
       lenis.on("scroll", ScrollTrigger.update);
 
-      gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
-      });
+      // Использовать requestAnimationFrame вместо GSAP ticker
+      // Это избегает конфликтов с React батчингом
+      const raf = (time: number) => {
+        lenis.raf(time);
+        rafRef.current = requestAnimationFrame(raf);
+      };
 
-      gsap.ticker.lagSmoothing(0);
+      rafRef.current = requestAnimationFrame(raf);
 
       return () => {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+        }
         lenis.destroy();
-        gsap.ticker.remove(lenis.raf);
+        lenisRef.current = null;
       };
     } catch (error) {
       console.error("SmoothScroll initialization error:", error);
       return undefined;
     }
-  }, [isClient]);
+  }, []);
 
   return <div className="root-wrapper">{children}</div>;
 }
