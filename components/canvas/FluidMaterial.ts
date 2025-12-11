@@ -1,22 +1,23 @@
 import { shaderMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Сложный шейдер для эффекта "Chrome Ferrofluid"
-export const vertexShader = `
+const vertexShader = `
   uniform float u_time;
   uniform vec2 u_mouse;
   uniform float u_intensity;
+  uniform float u_phase; // 0 = Calm, 1 = Chaos, 2 = Structure
 
   varying vec2 vUv;
   varying vec3 vNormal;
   varying float vDisplacement;
-  varying vec3 vViewPosition;
+  varying float vPhaseState;
 
-  // -- FBM NOISE FUNCTIONS --
+  // --- Noise Functions ---
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
   vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+  
   float snoise(vec3 v) {
     const vec2 C = vec2(1.0/6.0, 1.0/3.0);
     const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
@@ -63,64 +64,97 @@ export const vertexShader = `
     return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
   }
 
+  // Кристаллизация (Structure)
+  vec3 quantize(vec3 p, float s) {
+    return floor(p * s) / s;
+  }
+
+  // 4D сворачивание (Chaos)
+  vec3 fold4D(vec3 p) {
+    p = abs(p) - 0.4;
+    if (p.x < p.y) p.xy = p.yx;
+    if (p.x < p.z) p.xz = p.zx;
+    if (p.y < p.z) p.yz = p.zy;
+    return p;
+  }
+
   void main() {
     vUv = uv;
-    vNormal = normalize(normalMatrix * normal);
     
-    // Сложный шум: наслоение разных частот (FBM-like)
-    float n1 = snoise(position * 2.0 + u_time * 0.5);
-    float n2 = snoise(position * 4.0 - u_time * 0.2);
-    float n3 = snoise(position * 8.0 + u_time * 0.1);
+    // Базовый шум
+    float nSmooth = snoise(position * 1.5 + u_time * 0.1);
+    float nChaos = snoise(fold4D(position * 2.0 + u_time * 0.4));
+    
+    vec3 finalPos = position;
+    float disp = 0.0;
+
+    if (u_phase < 1.0) { 
+       // Фаза 1: Спокойствие -> Хаос
+       float t = smoothstep(0.0, 1.0, u_phase);
+       disp = mix(nSmooth * 0.2, nChaos * 0.6, t);
+       finalPos = position + normal * disp;
+    } else if (u_phase < 2.0) {
+       // Фаза 2: Хаос -> Структура
+       float t = smoothstep(0.0, 1.0, u_phase - 1.0);
+       vec3 structPos = quantize(position + normal * nChaos * 0.3, 3.0);
+       finalPos = mix(position + normal * nChaos * 0.6, structPos, t);
+       disp = nChaos;
+    } else {
+       // Фаза 3: Структура -> Спокойствие
+       float t = smoothstep(0.0, 1.0, u_phase - 2.0);
+       vec3 structPos = quantize(position, 3.0);
+       finalPos = mix(structPos, position + normal * nSmooth * 0.2, t);
+       disp = mix(0.5, nSmooth * 0.2, t);
+    }
     
     // Реакция на мышь
     float mouseDist = distance(uv, u_mouse);
-    float interact = smoothstep(0.4, 0.0, mouseDist) * u_intensity;
+    float interact = smoothstep(0.3, 0.0, mouseDist) * u_intensity;
+    finalPos += normal * interact * 0.5;
 
-    // Итоговое смещение
-    float displacement = (n1 * 0.5 + n2 * 0.25 + n3 * 0.125) + interact;
-    vDisplacement = displacement;
+    vDisplacement = disp;
+    vNormal = normalize(normalMatrix * normal);
+    vPhaseState = u_phase;
 
-    // Применяем смещение к вершинам
-    vec3 newPos = position + normal * displacement * 0.4;
-    
-    vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
-    vViewPosition = -mvPosition.xyz;
-    gl_Position = projectionMatrix * mvPosition;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPos, 1.0);
   }
 `;
 
-export const fragmentShader = `
-  uniform float u_time;
-  
-  varying vec2 vUv;
+const fragmentShader = `
   varying vec3 vNormal;
   varying float vDisplacement;
-  varying vec3 vViewPosition;
+  varying float vPhaseState;
 
   void main() {
-    // Нормали для освещения
+    vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
     vec3 normal = normalize(vNormal);
-    vec3 viewDir = normalize(vViewPosition);
     
-    // Создаем эффект "хромированной" поверхности (fake reflections)
-    vec3 viewReflect = reflect(-viewDir, normal);
+    // OdinLab colors
+    vec3 cDark = vec3(0.04, 0.09, 0.16);
+    vec3 cBlue = vec3(0.12, 0.23, 0.54);
+    vec3 cGold = vec3(0.98, 0.75, 0.16);
+    vec3 cNeon = vec3(0.0, 1.0, 0.8);
+
+    // Френель
+    float fresnel = pow(1.0 - dot(viewDir, normal), 2.0);
     
-    // Палитра: Темно-синий -> Золото -> Яркий блик
-    vec3 colorBase = vec3(0.04, 0.09, 0.16); // Odin Dark
-    vec3 colorHighlight = vec3(0.98, 0.75, 0.16); // Odin Gold
+    // Окрашивание в зависимости от фазы
+    vec3 finalColor = cDark;
     
-    // Смешивание цветов на основе искажения и угла обзора
-    float mixFactor = smoothstep(-0.2, 0.5, vDisplacement);
-    
-    // Френель (свечение по краям)
-    float fresnel = pow(1.0 - dot(viewDir, normal), 3.0);
-    
-    // Имитация отражений окружения (Holographic feel)
-    float reflection = dot(viewReflect, vec3(0.0, 1.0, 0.0)) * 0.5 + 0.5;
-    
-    vec3 finalColor = mix(colorBase, colorHighlight, mixFactor * 0.6);
-    finalColor += colorHighlight * fresnel * 0.5; // Свечение
-    finalColor += vec3(1.0) * pow(reflection, 10.0) * 0.3; // Блики
+    if (vPhaseState < 1.0) {
+        // Calm to Chaos
+        finalColor = mix(cBlue, cGold, vDisplacement * 2.0 + 0.2);
+    } else if (vPhaseState < 2.0) {
+        // Chaos to Structure
+        finalColor = mix(cGold, cNeon, abs(sin(vDisplacement * 10.0)));
+    } else {
+        // Structure
+        float grid = step(0.9, fract(vDisplacement * 10.0));
+        finalColor = mix(cBlue, cGold, grid);
+    }
+
+    // Подсветка краев
+    finalColor += cGold * fresnel * 0.4;
 
     gl_FragColor = vec4(finalColor, 1.0);
   }
@@ -131,6 +165,7 @@ export const FluidMaterial = shaderMaterial(
     u_time: 0,
     u_mouse: new THREE.Vector2(0.5, 0.5),
     u_intensity: 0.0,
+    u_phase: 0.0,
   },
   vertexShader,
   fragmentShader
