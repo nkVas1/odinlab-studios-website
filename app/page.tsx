@@ -28,11 +28,13 @@ export default function Home() {
 
   return (
     <>
-      <Suspense fallback={<div className="fixed inset-0 bg-odin-dark" />}>
+      {/* Временно отключен Canvas из-за ошибки React */}
+      {/* <Suspense fallback={<div className="fixed inset-0 bg-odin-dark" />}>
         <Scene>
           <FloatingShape />
         </Scene>
-      </Suspense>
+      </Suspense> */}
+      <div className="fixed inset-0 -z-10 h-full w-full bg-gradient-to-br from-odin-dark via-odin-dark/95 to-odin-blue/20" />
 
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20">
         <div className="z-10 flex flex-col items-center text-center mix-blend-difference">

@@ -15,11 +15,13 @@ export default function Scene({ children, className }: SceneProps) {
       className={`fixed inset-0 -z-10 h-full w-full pointer-events-none ${
         className || ""
       }`}
+      suppressHydrationWarning
     >
       <Canvas
         dpr={[1, 2]}
         camera={{ position: [0, 0, 6], fov: 45 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        performance={{ min: 0.5 }}
       >
         <Suspense fallback={null}>
           <Environment preset="city" />
