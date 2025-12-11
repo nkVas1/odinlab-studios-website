@@ -38,46 +38,6 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* -- THEME DEFINITIONS -- */
-
-/* 1. Neobrutalism (По умолчанию) */
-:root {
-  --bg-color: #0A1628;
-  --text-color: #E2E8F0;
-  --accent-color: #FBBF24;
-  --border-style: 2px solid var(--text-color);
-  --border-radius: 0;
-  --shadow: 5px 5px 0px 0px var(--accent-color);
-  --font-family: 'Courier New', monospace;
-  --transition-speed: 0.2s;
-}
-
-/* 2. Glassmorphism / Aurora */
-body.theme-glass {
-  --bg-color: #050A14;
-  --text-color: #ffffff;
-  --accent-color: #1E3A8A;
-  --border-style: 1px solid rgba(255, 255, 255, 0.1);
-  --border-radius: 16px;
-  --shadow: none;
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: radial-gradient(at 20% 80%, hsla(217,73%,38%,0.3) 0px, transparent 50%),
-              radial-gradient(at 80% 20%, hsla(43,96%,59%,0.2) 0px, transparent 50%),
-              #050A14 !important;
-}
-
-/* 3. Kinetic Typography / Minimalist */
-body.theme-kinetic {
-  --bg-color: #E2E8F0;
-  --text-color: #0A1628;
-  --accent-color: #FBBF24;
-  --border-style: 1px solid var(--text-color);
-  --border-radius: 4px;
-  --shadow: none;
-  --font-family: Georgia, serif;
-  background: #E2E8F0 !important;
-}
-
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }

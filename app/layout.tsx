@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import ErrorBoundary from "@/components/providers/ErrorBoundary";
 import SmoothScroll from "@/components/providers/SmoothScroll";
-import ThemeTrigger from "@/components/utils/ThemeTrigger";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import Cursor from "@/components/ui/Cursor";
@@ -105,7 +104,6 @@ export default function RootLayout({
       </head>
       <body className="bg-odin-dark text-odin-text antialiased selection:bg-odin-gold selection:text-odin-dark">
         <ErrorBoundary>
-          <ThemeTrigger />
           <SmoothScroll>
             <Cursor />
             <Header />

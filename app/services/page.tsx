@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
+import StyleShowcase from "@/components/features/StyleShowcase";
 
 export const metadata: Metadata = {
   title: "Услуги | OdinLab Studios",
@@ -73,6 +74,9 @@ export default function ServicesPage() {
             ))}
           </div>
         </div>
+
+        {/* Блок генератора стилей */}
+        <StyleShowcase />
       </main>
       <Footer />
     </>
