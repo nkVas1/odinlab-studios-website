@@ -2,6 +2,10 @@
   "name": "odinlab-studios",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +19,7 @@
     "framer-motion": "^11.0.24",
     "gsap": "^3.12.5",
     "lenis": "^1.0.42",
-    "lucide-react": "^0.363.0",
+    "lucide-react": "^0.559.0",
     "next": "^15.1.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
