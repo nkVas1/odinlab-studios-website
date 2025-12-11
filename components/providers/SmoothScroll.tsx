@@ -28,15 +28,18 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
 
       lenis.on("scroll", ScrollTrigger.update);
 
-      gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
-      });
-
-      gsap.ticker.lagSmoothing(0);
+      // Используем обычный requestAnimationFrame вместо GSAP ticker
+      // чтобы избежать конфликтов с React batch config
+      let rafId: number;
+      const raf = (time: number) => {
+        lenis.raf(time);
+        rafId = requestAnimationFrame(raf);
+      };
+      rafId = requestAnimationFrame(raf);
 
       return () => {
+        cancelAnimationFrame(rafId);
         lenis.destroy();
-        gsap.ticker.remove(lenis.raf);
       };
     } catch (error) {
       console.error("SmoothScroll initialization error:", error);

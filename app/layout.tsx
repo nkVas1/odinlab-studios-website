@@ -7,6 +7,9 @@ import Footer from "@/components/ui/Footer";
 import Cursor from "@/components/ui/Cursor";
 import "./globals.css";
 
+// Динамический рендер - нужен для Canvas/Three.js
+export const dynamic = "force-dynamic";
+
 const inter = Inter({
   subsets: ["cyrillic", "latin"],
   variable: "--font-inter",
