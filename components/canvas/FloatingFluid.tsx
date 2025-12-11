@@ -57,7 +57,8 @@ export default function FloatingFluid() {
 
   return (
     <mesh ref={meshRef} scale={2.5}>
-      <icosahedronGeometry args={[1, 64]} />
+      {/* Увеличиваем детализацию для шейдера */}
+      <icosahedronGeometry args={[1, 128]} />
       {/* @ts-ignore */}
       <fluidMaterialImpl ref={materialRef} />
     </mesh>
