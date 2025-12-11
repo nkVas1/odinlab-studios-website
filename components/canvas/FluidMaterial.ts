@@ -127,55 +127,89 @@ const fragmentShader = `
   varying float vDisplacement;
   varying float vPhaseState;
 
-  // Функция для плавного смешивания 3 цветов
-  vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
-      return a + b * cos(6.28318 * (c * t + d));
-  }
-
   void main() {
     vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
     vec3 normal = normalize(vNormal);
     
-    // Базовые цвета OdinLab (более глубокие и спокойные)
-    vec3 cDark = vec3(0.02, 0.05, 0.1); 
-    vec3 cBlue = vec3(0.08, 0.15, 0.4);
-    vec3 cGold = vec3(0.8, 0.6, 0.2); // Менее яркое золото
-    vec3 cNeon = vec3(0.0, 0.8, 0.9); // Циан вместо кислотного неона
+    // --- НОВАЯ ПАЛИТРА ODINLAB ---
+    // База: Глубокая бездна
+    vec3 cDark = vec3(0.01, 0.02, 0.05); 
+    // Спокойствие: Благородный синий
+    vec3 cBlue = vec3(0.05, 0.1, 0.3);
+    // Хаос: Энергичная плазма (Индиго -> Маджента) вместо Циана
+    vec3 cPlasma = vec3(0.4, 0.0, 0.8); 
+    // Структура: Чистое золото
+    vec3 cGold = vec3(1.0, 0.7, 0.1); 
 
-    // Френель (свечение по краям) - делаем мягче
+    // Френель (свечение по краям)
     float fresnel = pow(1.0 - dot(viewDir, normal), 3.0);
     
+    // Инициализация цвета
     vec3 finalColor = cDark;
     
-    // Используем sin(u_time) для бесконечно плавной пульсации внутри фаз
-    float pulse = sin(u_time * 0.5) * 0.5 + 0.5;
-
+    // Плавное смешивание фаз
+    // vPhaseState меняется от 0 до 3 плавно (благодаря lerp в JS)
+    
     if (vPhaseState < 1.0) {
-        // Фаза 1: Calm -> Chaos
-        // Плавный градиент от синего к золоту
-        float t = smoothstep(0.0, 1.0, vDisplacement * 1.5 + 0.5); 
-        finalColor = mix(cBlue, cGold, t * 0.7); // Ограничиваем влияние золота
-    } else if (vPhaseState < 2.0) {
-        // Фаза 2: Chaos (Пик активности)
-        // Здесь разрешаем немного неона, но смешиваем его с темной базой
-        // Используем vDisplacement для органичности
-        float chaosLevel = smoothstep(0.4, 0.8, abs(sin(vDisplacement * 8.0 + u_time)));
+        // --- ФАЗА 1: СПОКОЙСТВИЕ (0 -> 1) ---
+        // От темного к синему с золотыми прожилками
+        float t = smoothstep(0.0, 1.0, vPhaseState);
         
-        // Кислота появляется только на пиках
-        vec3 chaosColor = mix(cGold, cNeon, chaosLevel);
-        finalColor = mix(cDark, chaosColor, 0.6); 
-    } else {
-        // Фаза 3: Structure
-        // Элегантная сетка
-        float grid = step(0.95, fract(vDisplacement * 15.0)); // Тонкие линии
-        finalColor = mix(cBlue * 0.5, cGold, grid);
+        // Органический шум для цвета
+        float colorNoise = smoothstep(0.3, 0.7, vDisplacement + 0.5);
+        
+        vec3 calmColor = mix(cDark, cBlue, 0.8);
+        calmColor = mix(calmColor, cGold * 0.5, colorNoise * 0.3); // Легкое золото
+        
+        finalColor = calmColor;
+    } 
+    else if (vPhaseState < 2.0) {
+        // --- ФАЗА 2: ХАОС (1 -> 2) ---
+        // Переход от Синего к Плазме
+        float t = smoothstep(0.0, 1.0, vPhaseState - 1.0);
+        
+        // Агрессивное искажение цвета от смещения
+        float chaosLevel = abs(sin(vDisplacement * 10.0 + u_time * 2.0));
+        vec3 chaosColor = mix(cBlue, cPlasma, chaosLevel);
+        
+        // Вспышки золота на пиках хаоса
+        chaosColor += cGold * smoothstep(0.8, 1.0, chaosLevel) * t;
+        
+        // Смешиваем с предыдущей фазой для плавности
+        finalColor = mix(vec3(0.05, 0.1, 0.3), chaosColor, t);
+    } 
+    else if (vPhaseState < 3.0) {
+        // --- ФАЗА 3: СТРУКТУРА (2 -> 3) ---
+        // Переход от Плазмы к Золотой Сетке
+        float t = smoothstep(0.0, 1.0, vPhaseState - 2.0);
+        
+        // Кристаллическая решетка
+        float grid = step(0.92, fract(vDisplacement * 20.0));
+        
+        vec3 structColor = mix(cDark, cGold, grid); // Золотая сетка на темном
+        structColor += cPlasma * 0.2; // Остаточное свечение плазмы
+        
+        // Смешиваем с хаосом
+        vec3 prevChaosBase = mix(cBlue, cPlasma, 0.5);
+        finalColor = mix(prevChaosBase, structColor, t);
+    }
+    else {
+        // --- ВОЗВРАТ (3 -> 0) ---
+        float t = smoothstep(0.0, 1.0, vPhaseState - 3.0);
+        
+        // Растворение структуры в темноту
+        float grid = step(0.92, fract(vDisplacement * 20.0));
+        vec3 structColor = mix(cDark, cGold, grid);
+        
+        finalColor = mix(structColor, cDark, t);
     }
 
-    // Мягкий блик
-    finalColor += cGold * fresnel * 0.3;
+    // Финальные штрихи
+    // Добавляем "дорогой" блик
+    finalColor += cGold * fresnel * 0.4;
     
-    // Общее тонирование для целостности
-    finalColor = mix(finalColor, cDark, 0.2);
+    // Гамма-коррекция для сочности
+    finalColor = pow(finalColor, vec3(0.9));
 
     gl_FragColor = vec4(finalColor, 1.0);
   }

@@ -91,23 +91,35 @@ const STYLES = {
   },
   glass: {
     id: "glass", 
-    label: "Glass", 
+    label: "Glassmorphism", 
     icon: <Droplets size={20} />,
-    desc: "Глассморфизм: многослойность, глубина.",
+    desc: "Прозрачность, глубина, премиальный 'Frosted Glass' эффект.",
     vars: { 
-      "--bg-page": "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", // Пастельный градиент
-      "--bg-card": "rgba(255, 255, 255, 0.45)", // Более прозрачный белый
-      "--text-main": "#1f2937", // Темно-серый для читаемости
-      "--text-sec": "rgba(31, 41, 55, 0.6)",
-      "--accent": "#2563eb",
+      // Градиент "Aurora" из ранней версии
+      "--bg-page": "radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%), #1a1a1a",
+      
+      // Настоящее матовое стекло (белый с малой непрозрачностью)
+      "--bg-card": "rgba(255, 255, 255, 0.1)", 
+      
+      "--text-main": "#ffffff",
+      "--text-sec": "rgba(255, 255, 255, 0.7)",
+      "--accent": "rgba(255, 255, 255, 0.2)",
       "--radius": "24px", 
-      "--border": "1px solid rgba(255, 255, 255, 0.6)", // Светлая граница
+      
+      // Тонкая белая обводка для контура стекла
+      "--border": "1px solid rgba(255, 255, 255, 0.15)", 
+      
       "--font-h": '"Inter", sans-serif', 
-      "--shadow": "0 8px 32px 0 rgba(31, 38, 135, 0.15)", // Мягкая тень
+      
+      // Тень для отрыва от фона
+      "--shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.37)", 
+      
       "--btn-shape": "50px", 
       "--layout-gap": "24px", 
       "--texture": "none",
-      "--backdrop": "blur(12px) saturate(180%)" // Ключевой эффект
+      
+      // Сильное размытие фона
+      "--backdrop": "blur(20px) saturate(150%)" 
     }
   },
   y2k: {

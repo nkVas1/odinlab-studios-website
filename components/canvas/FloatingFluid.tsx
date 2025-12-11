@@ -52,18 +52,28 @@ export default function FloatingFluid() {
     );
 
     // Следование за мышью с инерцией
-    materialRef.current.u_mouse.lerp(state.pointer, 0.03); // Еще плавнее (было 0.05)
+    materialRef.current.u_mouse.lerp(state.pointer, 0.05);
     
-    // Вращение объекта
-    // Используем плавный sin для изменения скорости, чтобы не было рывков
-    // Базовая скорость очень низкая
-    const baseRotSpeed = 0.05;
-    const variableSpeed = Math.sin(time * 0.2) * 0.05; // Мягкая вариация
+    // --- УМНОЕ ВРАЩЕНИЕ ---
+    // Базовая скорость (всегда крутимся)
+    let rotationSpeed = 0.15; 
     
-    meshRef.current.rotation.y += (baseRotSpeed + variableSpeed) * 0.01; // Делим на 100 для медленности
+    // Модификаторы скорости в зависимости от фазы
+    // Phase 1 (Chaos): Ускоряемся
+    if (targetPhase > 1.0 && targetPhase < 2.0) {
+        rotationSpeed = 0.4;
+    }
+    // Phase 2 (Structure): Почти замираем, чтобы показать грани
+    if (targetPhase > 2.0 && targetPhase < 3.0) {
+        rotationSpeed = 0.05;
+    }
+
+    // Плавное изменение скорости вращения (инерция)
+    meshRef.current.rotation.y += rotationSpeed * 0.01;
     
-    // Легкое покачивание
-    meshRef.current.rotation.x = Math.sin(time * 0.1) * 0.1;
+    // Дополнительная ось вращения для сложности (медленная)
+    meshRef.current.rotation.z = Math.sin(time * 0.1) * 0.1;
+    meshRef.current.rotation.x = Math.cos(time * 0.15) * 0.1;
   });
 
   return (
