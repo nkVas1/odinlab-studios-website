@@ -51,45 +51,46 @@ export default function ProcessMap() {
   const [activeStep, setActiveStep] = useState(1);
 
   return (
-    <section className="py-32 bg-odin-dark relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-odin-dark relative overflow-hidden">
       {/* Фоновый элемент */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
           
           {/* Левая колонка: Навигация */}
           <div className="w-full lg:w-1/3">
-            <h2 className="font-display text-4xl font-bold text-white mb-8">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-6 md:mb-8 text-center lg:text-left">
               Как мы <span className="text-odin-gold">работаем</span>
             </h2>
             
-            <div className="space-y-2">
+            {/* МОБИЛЬНАЯ ВЕРСИЯ: Горизонтальный скролл | ДЕСКТОП: Вертикальные кнопки */}
+            <div className="flex lg:flex-col overflow-x-auto pb-4 gap-2 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 lg:gap-2">
               {STEPS.map((step) => (
                 <button
                   key={step.id}
                   onClick={() => setActiveStep(step.id)}
-                  className={`w-full text-left p-4 rounded-xl transition-all duration-300 flex items-center justify-between group ${
+                  className={`flex-shrink-0 w-[80%] lg:w-full text-left p-4 rounded-xl transition-all duration-300 flex items-center justify-between group snap-center border ${
                     activeStep === step.id 
-                      ? "bg-white/10 text-white border border-white/20" 
-                      : "text-gray-500 hover:text-white hover:bg-white/5"
+                      ? "bg-white/10 text-white border-white/20 shadow-lg" 
+                      : "text-gray-500 border-transparent hover:text-white hover:bg-white/5"
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-lg transition-colors ${
+                    <div className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
                        activeStep === step.id ? "bg-odin-gold text-black" : "bg-white/5 text-gray-500"
                     }`}>
                       {step.icon}
                     </div>
-                    <div>
-                      <span className="block font-bold text-lg">{step.title}</span>
-                      <span className="text-xs uppercase tracking-wider opacity-60">{step.short}</span>
+                    <div className="min-w-0">
+                      <span className="block font-bold text-base md:text-lg truncate">{step.title}</span>
+                      <span className="text-xs uppercase tracking-wider opacity-60 block truncate">{step.short}</span>
                     </div>
                   </div>
                   
                   {activeStep === step.id && (
-                    <ChevronRight className="w-5 h-5 text-odin-gold" />
+                    <ChevronRight className="w-5 h-5 text-odin-gold hidden lg:block flex-shrink-0" />
                   )}
                 </button>
               ))}
@@ -97,8 +98,8 @@ export default function ProcessMap() {
           </div>
 
           {/* Правая колонка: Детализация (Карточка) */}
-          <div className="w-full lg:w-2/3">
-             <div className="relative aspect-video lg:aspect-[16/9] bg-black/50 border border-white/10 rounded-2xl overflow-hidden p-8 md:p-12 flex flex-col justify-end">
+          <div className="w-full lg:w-2/3 mt-4 lg:mt-0">
+             <div className="relative aspect-[4/5] md:aspect-video lg:aspect-[16/9] bg-black/50 border border-white/10 rounded-2xl overflow-hidden p-6 md:p-12 flex flex-col justify-end">
                 
                 {/* Анимированный фон карточки */}
                 <AnimatePresence mode="wait">
@@ -112,8 +113,8 @@ export default function ProcessMap() {
                   />
                 </AnimatePresence>
 
-                {/* Большая цифра */}
-                <div className="absolute top-4 right-8 text-[120px] font-display font-bold text-white/5 leading-none select-none">
+                {/* Большая цифра (адаптивная) */}
+                <div className="absolute top-4 right-4 md:right-8 text-[80px] md:text-[120px] font-display font-bold text-white/5 leading-none select-none">
                   0{activeStep}
                 </div>
 

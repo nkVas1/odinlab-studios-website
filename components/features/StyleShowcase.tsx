@@ -146,31 +146,32 @@ const STYLES = {
     id: "luxury", 
     label: "Old Money", 
     icon: <Feather size={20} />,
-    desc: "Тихая роскошь. Текстура бумаги, золото, антиква.",
+    desc: "Журнальная верстка, антиква, подлинная роскошь минимализма.",
     vars: { 
-      // Теплый, "кремовый" фон
-      "--bg-page": "#F5F5F0", 
+      // Благородный "яичной скорлупы" (off-white)
+      "--bg-page": "#F9F8F6", 
       "--bg-card": "transparent",
       
-      // Темно-зеленый (Racing Green) или глубокий коричневый вместо черного
-      "--text-main": "#2C3E30", 
-      "--text-sec": "#5F6F60",
+      // Глубокий, почти чёрный зелёный (Racing Green)
+      "--text-main": "#1A1C19", 
+      "--text-sec": "#52524E",
       
-      // Приглушенное золото
-      "--accent": "#BFA15F", 
+      // Бронза вместо жёлтого золота
+      "--accent": "#8C7B6C", 
       
-      "--radius": "2px", 
+      "--radius": "0px", 
       
-      // Двойная рамка для эффекта "открытки"
-      "--border": "1px solid #D8D4C9", 
+      // Отсутствие явных границ
+      "--border": "none", 
       
+      // Serif шрифты обязательны
       "--font-h": '"Playfair Display", "Times New Roman", serif', 
       "--shadow": "none", 
       "--btn-shape": "0px", 
-      "--layout-gap": "40px", 
+      "--layout-gap": "60px", // Очень большие отступы (воздух)
       
-      // Тонкий шум бумаги
-      "--texture": "url('https://www.transparenttextures.com/patterns/cream-paper.png')" 
+      // Нет текстур, чистота
+      "--texture": "none" 
     }
   },
   paper: {
@@ -240,30 +241,44 @@ const MockWebsite = ({ currentStyle }: { currentStyle: any }) => {
       <div className="relative z-10 p-6 md:p-10 max-w-5xl mx-auto flex flex-col gap-10">
         
         {/* Header */}
-        <header className="flex justify-between items-center">
-          <div className="text-2xl font-bold tracking-tighter flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: currentStyle.vars["--accent"], color: currentStyle.id === 'y2k' ? 'black' : 'white' }}>O</div>
-            <span>ODIN<span style={{opacity: 0.6}}>UI</span></span>
+        <header className={`flex items-center transition-all ${currentStyle.id === 'luxury' ? 'flex-col gap-6 justify-center text-center' : 'justify-between'}`}>
+          <div className={`font-bold tracking-tighter flex items-center gap-2 ${currentStyle.id === 'luxury' ? 'flex-col text-4xl tracking-widest uppercase border-b pb-4 border-current w-full' : 'text-2xl'}`}>
+            {currentStyle.id === 'luxury' ? (
+              <>
+                <span>ODIN</span>
+              </>
+            ) : (
+              <>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: currentStyle.vars["--accent"], color: currentStyle.id === 'y2k' ? 'black' : 'white' }}>O</div>
+                <span>ODIN<span style={{opacity: 0.6}}>UI</span></span>
+              </>
+            )}
           </div>
-          <nav className="hidden md:flex gap-6 text-sm font-medium opacity-70">
-            <span>Product</span>
-            <span>Solutions</span>
-            <span>Pricing</span>
+
+          {/* Навигация */}
+          <nav className={`hidden md:flex gap-6 text-sm font-medium opacity-70 ${currentStyle.id === 'luxury' ? 'uppercase tracking-[0.2em] text-xs' : ''}`}>
+            <span>{currentStyle.id === 'luxury' ? 'Collection' : 'Product'}</span>
+            <span>{currentStyle.id === 'luxury' ? 'Maison' : 'Solutions'}</span>
+            <span>Contact</span>
           </nav>
-          <button 
-            style={{
-              background: currentStyle.vars["--accent"],
-              color: currentStyle.id === 'y2k' || currentStyle.id === 'cyberpunk' ? 'black' : 'white',
-              borderRadius: currentStyle.vars["--btn-shape"],
-              border: currentStyle.vars["--border"],
-              boxShadow: currentStyle.vars["--shadow"],
-              padding: '10px 24px',
-              fontWeight: 'bold',
-              backdropFilter: currentStyle.vars["--backdrop"] || 'none'
-            } as React.CSSProperties}
-          >
-            Start Free
-          </button>
+
+          {/* Кнопка (скрываем для Luxury) */}
+          {currentStyle.id !== 'luxury' && (
+            <button 
+              style={{
+                background: currentStyle.vars["--accent"],
+                color: currentStyle.id === 'y2k' || currentStyle.id === 'cyberpunk' ? 'black' : 'white',
+                borderRadius: currentStyle.vars["--btn-shape"],
+                border: currentStyle.vars["--border"],
+                boxShadow: currentStyle.vars["--shadow"],
+                padding: '10px 24px',
+                fontWeight: 'bold',
+                backdropFilter: currentStyle.vars["--backdrop"] || 'none'
+              } as React.CSSProperties}
+            >
+              Start Free
+            </button>
+          )}
         </header>
 
         {/* Hero Section */}
